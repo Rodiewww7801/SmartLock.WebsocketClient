@@ -27,7 +27,7 @@ void WiFiConnector ::setup()
 void WiFiConnector ::connect()
 {
     int failedAttemptsNum = 0;
-    Serial.print("[WiFiConnector]: Connecting...");
+    Serial.print("[WiFiConnector] Connecting...");
 
     while (status != WL_CONNECTED && ++failedAttemptsNum <= 10)
     {
@@ -38,16 +38,16 @@ void WiFiConnector ::connect()
     Serial.println();
     if (failedAttemptsNum >= 10)
     {
-        Serial.println("[WiFiConnector]: Failed to connect to WiFi");
+        Serial.println("[WiFiConnector] Failed to connect to WiFi");
         status = WL_CONNECT_FAILED;
         return;
     }
 
-    Serial.println("[WiFiConnector]: Connected to WiFi");
+    Serial.println("[WiFiConnector] Connected to WiFi");
 
     String ipStr = WiFi.localIP().toString();
     this->ipStr = new char[ipStr.length() + 1];
     strcpy(this->ipStr, ipStr.c_str());
-    Serial.printf("[WiFiConnector]: Local IP: %s\n", this->ipStr);
+    Serial.printf("[WiFiConnector] Local IP: %s\n", this->ipStr);
     return;
 }

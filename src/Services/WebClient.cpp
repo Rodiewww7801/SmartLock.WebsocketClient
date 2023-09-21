@@ -7,22 +7,23 @@ void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     switch (type)
     {
     case WStype_DISCONNECTED:
-        Serial.printf("[WSc] Disconnected!\n");
+        Serial.printf("[WebClient] Disconnected!\n");
+        lockInstance->setServerConnectionStatus(WStype_DISCONNECTED);
         break;
     case WStype_CONNECTED:
-        Serial.printf("[WSc] Connected to url: %s\n", payload);
-
+        Serial.printf("[WebClient] Connected to url: %s\n", payload);
+        lockInstance->setServerConnectionStatus(WStype_CONNECTED);
         // send message to server when Connected
         websocketsClient.sendTXT("Connected");
         break;
     case WStype_TEXT:
-        Serial.printf("[WSc] get text: %s\n", payload);
-
+        Serial.printf("[WebClient] get text: %s\n", payload);
+        lockInstance->openLock();
         // send message to server
         // webSocket.sendTXT("message here");
         break;
     case WStype_BIN:
-        Serial.printf("[WSc] get binary length: %u\n", length);
+        Serial.printf("[WebClient] get binary length: %u\n", length);
 
         // send data to server
         // webSocket.sendBIN(payload, length);

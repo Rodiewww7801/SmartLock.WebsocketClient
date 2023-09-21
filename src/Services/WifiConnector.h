@@ -1,7 +1,6 @@
 #ifndef WIFICONNECTOR_H_
 #define WIFICONNECTOR_H_
 
-//#include <Arduino.h>
 #include <WiFi.h>
 #include <WifiMulti.h>
 #include <WiFiClient.h>
