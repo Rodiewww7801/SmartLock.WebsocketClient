@@ -29,8 +29,8 @@ void setup()
 
   webClient = new WebClient();
   webClient->lockInstance = lockInstace;
-  const char *caCert = readRootCACertificateFromSPIFFS();
-  webClient->setWebsocketConnection(host, websocketPort, "/", caCert);
+  const char *rootCACert = readRootCACertificateFromSPIFFS();
+  webClient->setWebsocketConnection(host, websocketPort, "/", rootCACert);
 }
 
 void loop()

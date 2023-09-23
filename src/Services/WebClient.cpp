@@ -37,9 +37,9 @@ void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     }
 }
 
-void WebClient::setWebsocketConnection(const char *host, int port, const char *url, const char *hostFingeprint)
+void WebClient::setWebsocketConnection(const char *host, int port, const char *url, const char *rootCACert)
 {
-    this->websocketsClient.beginSslWithCA(host, port, url, hostFingeprint);
+    this->websocketsClient.beginSslWithCA(host, port, url, rootCACert);
     std::function<void(WStype_t, uint8_t *, size_t)>
         callbackWrapper;
     callbackWrapper = [this](WStype_t type, uint8_t *payload, size_t length)

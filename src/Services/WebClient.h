@@ -13,7 +13,7 @@ private:
 public:
     LockInstance *lockInstance = NULL;
     WebClient();
-    void setWebsocketConnection(const char *host, int port, const char *url = "/", const char *hostFingeprint = "");
+    void setWebsocketConnection(const char *host, int port, const char *url = "/", const char *rootCACert = "");
     void loop();
 };
 
