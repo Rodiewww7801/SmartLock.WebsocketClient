@@ -3,7 +3,7 @@
 
 #include <WiFi.h>
 #include <WifiMulti.h>
-#include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 
 class WiFiConnector
 {

@@ -9,10 +9,11 @@ class WebClient
 private:
     WebSocketsClient websocketsClient;
     void webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
+
 public:
     LockInstance *lockInstance = NULL;
     WebClient();
-    void setWebsocketConnection(const char *ip, int port, const char *url = "/");
+    void setWebsocketConnection(const char *host, int port, const char *url = "/", const char *hostFingeprint = "");
     void loop();
 };
 
