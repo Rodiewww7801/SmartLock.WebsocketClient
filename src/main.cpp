@@ -52,7 +52,7 @@ char *readRootCACertificateFromSPIFFS()
     return NULL;
   }
 
-  File file = SPIFFS.open("/RootCACertificate.cer");
+  File file = SPIFFS.open(filePathToRootCACert);
   if (!file)
   {
     Serial.println("[WARNING] RootCACertificate.cer is missing!");
