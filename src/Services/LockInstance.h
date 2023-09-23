@@ -18,6 +18,8 @@ private:
     WStype_t serverConnectionStatus;
 
 public:
+    const char *deviceSerialNumber = NULL;
+    const char *ipAddress = NULL;
     int8_t currentGPIO = GPIO_NUM_NC;
     int8_t serverStatusGPIO = GPIO_NUM_NC;
     unsigned long timerDeadline;

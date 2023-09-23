@@ -9,9 +9,10 @@
 
 char *readRootCACertificateFromSPIFFS();
 
+
 WiFiConnector *wifiConnector;
 WebClient *webClient;
-LockInstance *lockInstace;
+LockInstance *lockInstance;
 
 void setup()
 {
@@ -20,15 +21,15 @@ void setup()
   pinMode(GPIO_NUM_15, OUTPUT);
   pinMode(GPIO_NUM_2, OUTPUT);
 
-  lockInstace = new LockInstance();
-  lockInstace->currentGPIO = GPIO_NUM_15;
-  lockInstace->serverStatusGPIO = GPIO_NUM_2;
+  lockInstance = new LockInstance();
+  lockInstance->currentGPIO = GPIO_NUM_15;
+  lockInstance->serverStatusGPIO = GPIO_NUM_2;
 
   wifiConnector = new WiFiConnector(wifiSSID, wifiPassword);
   wifiConnector->connect();
 
   webClient = new WebClient();
-  webClient->lockInstance = lockInstace;
+  webClient->lockInstance = lockInstance;
   const char *rootCACert = readRootCACertificateFromSPIFFS();
   webClient->setWebsocketConnection(host, websocketPort, "/", rootCACert);
 }
@@ -40,8 +41,14 @@ void loop()
     return;
   }
 
+  if (lockInstance->ipAddress == NULL || lockInstance->deviceSerialNumber == NULL)
+  {
+      lockInstance->ipAddress = wifiConnector->ipStr;
+      lockInstance->deviceSerialNumber = deviceSerialNumber;
+  }
+
   webClient->loop();
-  lockInstace->loop();
+  lockInstance->loop();
 }
 
 char *readRootCACertificateFromSPIFFS()

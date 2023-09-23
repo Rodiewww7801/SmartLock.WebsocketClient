@@ -53,11 +53,14 @@ void LockInstance::openLock()
 
 void LockInstance::closeLock()
 {
-    digitalWrite(currentGPIO, LOW);
-    timerStartLine = 0;
-    lockStatus = Closed;
-    Serial.println("[LockInstance] Lock is closed");
-    Serial.printf("[LockInstance] Turned OFF GPIO %d\n", currentGPIO);
+    if (digitalRead(currentGPIO) == HIGH)
+    {
+        digitalWrite(currentGPIO, LOW);
+        timerStartLine = 0;
+        lockStatus = Closed;
+        Serial.println("[LockInstance] Lock is closed");
+        Serial.printf("[LockInstance] Turned OFF GPIO %d\n", currentGPIO);
+    }
 }
 
 void LockInstance::loop()
