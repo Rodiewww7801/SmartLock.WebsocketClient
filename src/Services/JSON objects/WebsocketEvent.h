@@ -11,10 +11,10 @@ struct WebsocketEvent
 
 struct OpenLockEvent: WebsocketEvent
 {
-    OpenLockEvent(WebsocketEvent::EventTypeEnum eventType, unsigned long experationTime)
+    OpenLockEvent(WebsocketEvent::EventTypeEnum eventType, unsigned long exparationTime)
     {
         this->eventType = eventType;
-        this->experationTime = experationTime;
+        this->expirationTime = exparationTime;
     }
-    unsigned long experationTime;
+    unsigned long expirationTime;
 };

@@ -102,7 +102,7 @@ void WebClient::handleEvent(const WebsocketEvent *event)
         const OpenLockEvent *openLockEvent = reinterpret_cast<const OpenLockEvent *>(event);
         time_t currentTimeInSeconds;
         time(&currentTimeInSeconds);
-        if (currentTimeInSeconds < openLockEvent->experationTime)
+        if (currentTimeInSeconds < openLockEvent->expirationTime)
         {
             lockInstance->openLock();
         }
