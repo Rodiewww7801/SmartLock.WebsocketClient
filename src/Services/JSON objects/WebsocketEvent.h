@@ -1,9 +1,14 @@
+#ifndef WEBSOCKET_EVENT_H_
+#define WEBSOCKET_EVENT_H_
+
 struct WebsocketEvent
 {
     typedef enum
     {
         UNKNOWN = -1,
-        OPEN_LOCK = 0
+        OPEN_LOCK = 0,
+        LOCK_IS_OPEN,
+        LOCK_IS_CLOSED
     } EventTypeEnum;
 
     EventTypeEnum eventType;
@@ -11,10 +16,12 @@ struct WebsocketEvent
 
 struct OpenLockEvent: WebsocketEvent
 {
-    OpenLockEvent(WebsocketEvent::EventTypeEnum eventType, unsigned long exparationTime)
+    OpenLockEvent(WebsocketEvent::EventTypeEnum eventType, long expirationTime)
     {
         this->eventType = eventType;
-        this->expirationTime = exparationTime;
+        this->expirationTime = expirationTime;
     }
-    unsigned long expirationTime;
+    long expirationTime;
 };
+
+#endif

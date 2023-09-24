@@ -1,6 +1,15 @@
 #include "WebClient.h"
 
-WebClient::WebClient() = default;
+const char *ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 0;
+const int daylightOffset_sec = 3600;
+
+WebClient::WebClient()
+{
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    setenv("TZ", "UTC0", 1);
+    tzset();
+};
 
 void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
@@ -8,8 +17,8 @@ void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     {
     case WStype_DISCONNECTED:
         Serial.printf("[WebClient] Disconnected!\n");
-        lockInstance->setServerConnectionStatus(WStype_DISCONNECTED);
-        lockInstance->ipAddress = NULL;
+        lockInstance->setServerConnectionStatus(NULL, WStype_DISCONNECTED);
+        this->ipAddress = NULL;
         break;
     case WStype_CONNECTED:
         Serial.printf("[WebClient] Connected to url: %s\n", payload);
@@ -17,15 +26,15 @@ void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
         // send message to server when Connected
         websocketsClient.sendTXT("Connected");
         sendDeviceSerialNumberToServer();
-        lockInstance->setServerConnectionStatus(WStype_CONNECTED);
+        lockInstance->setServerConnectionStatus(this, WStype_CONNECTED);
         break;
     case WStype_TEXT:
     {
-        Serial.printf("[WebClient] get text: %s\n", payload);
         // send message to server
         // webSocket.sendTXT("message here");
-        WebsocketEvent websoketEvent = parsePayload(payload);
-        handleEvent(&websoketEvent);
+        WebsocketEvent *websoketEvent = new WebsocketEvent();
+        parsePayload(payload, websoketEvent);
+        handleEvent(websoketEvent);
     }
     break;
     case WStype_BIN:
@@ -57,19 +66,20 @@ void WebClient::setWebsocketConnection(const char *host, int port, const char *u
 
 void WebClient::sendDeviceSerialNumberToServer()
 {
-    if (lockInstance->deviceSerialNumber != NULL && lockInstance->ipAddress != NULL)
+    if (lockInstance->deviceSerialNumber != NULL && this->ipAddress != NULL)
     {
         StaticJsonDocument<1024> doc;
         doc["serialNumber"] = lockInstance->deviceSerialNumber;
-        doc["ip"] = lockInstance->ipAddress;
+        doc["ip"] = this->ipAddress;
         String stringJSON = doc.as<String>();
         this->websocketsClient.sendTXT(stringJSON);
     }
 }
 
-WebsocketEvent WebClient::parsePayload(uint8_t *payload)
+void WebClient::parsePayload(uint8_t *payload, WebsocketEvent * returnValue)
 {
-    WebsocketEvent websocketEvent = {.eventType = WebsocketEvent::UNKNOWN};
+    WebsocketEvent *websocketEvent = new WebsocketEvent();
+    websocketEvent->eventType = WebsocketEvent::UNKNOWN;
 
     StaticJsonDocument<1024> doc;
     DeserializationError error = deserializeJson(doc, payload);
@@ -77,41 +87,69 @@ WebsocketEvent WebClient::parsePayload(uint8_t *payload)
     {
         Serial.print(F("deserializeJson() returned "));
         Serial.println(error.f_str());
-        return websocketEvent;
     }
 
     String eventTypeString = doc["eventType"];
     if (eventTypeString == "OPEN_LOCK")
     {
         WebsocketEvent::EventTypeEnum eventType = WebsocketEvent::OPEN_LOCK;
-        unsigned long experationTime = doc["data"]["experationTime"];
-        OpenLockEvent openLockEvent = OpenLockEvent(eventType, experationTime);
+        long expirationTime = doc["data"]["expirationTime"];
+        OpenLockEvent *openLockEvent = new OpenLockEvent(eventType, expirationTime);
         websocketEvent = openLockEvent;
     }
 
-    return websocketEvent;
+    returnValue = websocketEvent;
 }
 
-void WebClient::handleEvent(const WebsocketEvent *event)
+void WebClient::handleEvent(WebsocketEvent *event)
 {
     switch (event->eventType)
     {
     case WebsocketEvent::OPEN_LOCK:
     {
         Serial.println("[WebClient] handle event type OPEN_LOCK");
-        const OpenLockEvent *openLockEvent = reinterpret_cast<const OpenLockEvent *>(event);
-        time_t currentTimeInSeconds;
-        time(&currentTimeInSeconds);
-        if (currentTimeInSeconds < openLockEvent->expirationTime)
+        OpenLockEvent *openLockEvent = static_cast<OpenLockEvent*>(event);
+        unsigned long currentTime = getCurrentUTC0Time();
+        if (currentTime < openLockEvent->expirationTime)
         {
             lockInstance->openLock();
         }
+    }
+    break;
+    case WebsocketEvent::LOCK_IS_OPEN:
+    {
+        DynamicJsonDocument doc(1024);
+        doc["eventType"] = "LOCK_IS_OPEN";
+        long currentTime = getCurrentUTC0Time();
+        doc["data"]["openTime"] = currentTime;
+        String stringJSON = doc.as<String>();
+        websocketsClient.sendTXT(stringJSON);
+    }
+    break;
+    case WebsocketEvent::LOCK_IS_CLOSED:
+    {
+        DynamicJsonDocument doc(1024);
+        doc["eventType"] = "LOCK_IS_CLOSED";
+        long currentTime = getCurrentUTC0Time();
+        doc["data"]["closedTime"] = currentTime;
+        String stringJSON = doc.as<String>();
+        websocketsClient.sendTXT(stringJSON);
     }
     break;
     default:
         break;
     }
     return;
+}
+
+unsigned long WebClient::getCurrentUTC0Time()
+{
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+    //Serial.println(&timeinfo, "[WebClient] Current time: %A, %B %d %Y %H:%M:%S");
+    time_t unixSystemTime = mktime(&timeinfo);
+    unsigned long returnValue = unixSystemTime;
+    return returnValue;
 }
 
 void WebClient::loop()

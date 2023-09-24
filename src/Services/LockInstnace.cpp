@@ -1,4 +1,5 @@
 #include "LockInstance.h"
+#include "WebClient.h"
 
 LockInstance::LockInstance()
 {
@@ -18,8 +19,9 @@ unsigned long LockInstance::getTimerStartLine()
     return this->timerStartLine;
 }
 
-void LockInstance::setServerConnectionStatus(WStype_t serverConnectionStatus)
+void LockInstance::setServerConnectionStatus(WebClient *webClient, WStype_t serverConnectionStatus)
 {
+    this->webClient = webClient;
     this->serverConnectionStatus = serverConnectionStatus;
     if (serverConnectionStatus == WStype_CONNECTED)
     {
@@ -46,8 +48,15 @@ void LockInstance::openLock()
         digitalWrite(currentGPIO, HIGH);
         timerStartLine = millis();
         lockStatus = Open;
+
         Serial.println("[LockInstance] Lock is open");
         Serial.printf("[LockInstance] Turned ON GPIO %d\n", currentGPIO);
+
+        WebsocketEvent websocketEvent = {.eventType = WebsocketEvent::LOCK_IS_OPEN};
+        if (webClient != NULL)
+        {
+            webClient->handleEvent(&websocketEvent);
+        }
     }
 }
 
@@ -58,8 +67,15 @@ void LockInstance::closeLock()
         digitalWrite(currentGPIO, LOW);
         timerStartLine = 0;
         lockStatus = Closed;
+
         Serial.println("[LockInstance] Lock is closed");
         Serial.printf("[LockInstance] Turned OFF GPIO %d\n", currentGPIO);
+
+        WebsocketEvent websocketEvent = {.eventType = WebsocketEvent::LOCK_IS_CLOSED};
+        if (webClient != NULL)
+        {
+            webClient->handleEvent(&websocketEvent);
+        }
     }
 }
 

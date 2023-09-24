@@ -9,13 +9,15 @@
 
 char *readRootCACertificateFromSPIFFS();
 
-
 WiFiConnector *wifiConnector;
 WebClient *webClient;
 LockInstance *lockInstance;
 
 void setup()
 {
+  // Configure timezone for time
+
+
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   pinMode(GPIO_NUM_15, OUTPUT);
@@ -41,9 +43,9 @@ void loop()
     return;
   }
 
-  if (lockInstance->ipAddress == NULL || lockInstance->deviceSerialNumber == NULL)
+  if (webClient->ipAddress == NULL || lockInstance->deviceSerialNumber == NULL)
   {
-      lockInstance->ipAddress = wifiConnector->ipStr;
+      webClient->ipAddress = wifiConnector->ipStr;
       lockInstance->deviceSerialNumber = deviceSerialNumber;
   }
 

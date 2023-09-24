@@ -3,9 +3,11 @@
 
 #include <Arduino.h>
 #include <WebSocketsClient.h>
+#include "JSON objects/WebsocketEvent.h"
 
-typedef enum
-{
+class WebClient;
+
+typedef enum {
     Open,
     Closed,
 } LockInstanceSatus;
@@ -16,10 +18,10 @@ private:
     unsigned long timerStartLine;
     LockInstanceSatus lockStatus;
     WStype_t serverConnectionStatus;
-
+    WebClient *webClient = NULL;
+    
 public:
     const char *deviceSerialNumber = NULL;
-    const char *ipAddress = NULL;
     int8_t currentGPIO = GPIO_NUM_NC;
     int8_t serverStatusGPIO = GPIO_NUM_NC;
     unsigned long timerDeadline;
@@ -27,7 +29,7 @@ public:
     LockInstance();
     LockInstanceSatus getLockStatus();
     unsigned long getTimerStartLine();
-    void setServerConnectionStatus(WStype_t serverConnectionStatus);
+    void setServerConnectionStatus(WebClient *webClient, WStype_t serverConnectionStatus);
     WStype_t getServerConnectionStatus();
     void openLock();
     void closeLock();
