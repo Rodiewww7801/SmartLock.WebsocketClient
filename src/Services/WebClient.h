@@ -12,7 +12,6 @@ class WebClient
 private:
     WebSocketsClient websocketsClient;
     void webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
-    void sendDeviceSerialNumberToServer();
     void parsePayload(uint8_t *payload, WebsocketEvent* returnValue);
 
 public:

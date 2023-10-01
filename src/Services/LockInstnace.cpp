@@ -71,7 +71,7 @@ void LockInstance::closeLock()
         Serial.println("[LockInstance] Lock is closed");
         Serial.printf("[LockInstance] Turned OFF GPIO %d\n", currentGPIO);
 
-        WebsocketEvent websocketEvent = {.eventType = WebsocketEvent::LOCK_IS_CLOSED};
+        WebsocketEvent websocketEvent = WebsocketEvent(WebsocketEvent::LOCK_IS_CLOSED);
         if (webClient != NULL)
         {
             webClient->handleEvent(&websocketEvent);

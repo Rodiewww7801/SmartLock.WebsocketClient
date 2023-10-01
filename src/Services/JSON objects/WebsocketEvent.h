@@ -1,8 +1,9 @@
 #ifndef WEBSOCKET_EVENT_H_
 #define WEBSOCKET_EVENT_H_
 
-struct WebsocketEvent
+class WebsocketEvent
 {
+public:
     typedef enum
     {
         UNKNOWN = -1,
@@ -12,16 +13,33 @@ struct WebsocketEvent
     } EventTypeEnum;
 
     EventTypeEnum eventType;
+
+    WebsocketEvent() = default;
+    WebsocketEvent(EventTypeEnum eventType)
+    {
+        this->eventType = eventType;
+    }
+
+    WebsocketEvent(const WebsocketEvent &event)
+    {
+        this->eventType = event.eventType;
+    }
 };
 
-struct OpenLockEvent: WebsocketEvent
+class OpenLockEvent : public WebsocketEvent
 {
+public:
+    long expirationTime;
     OpenLockEvent(WebsocketEvent::EventTypeEnum eventType, long expirationTime)
     {
         this->eventType = eventType;
         this->expirationTime = expirationTime;
     }
-    long expirationTime;
+
+    OpenLockEvent(const OpenLockEvent &event) : WebsocketEvent(event)
+    {
+        this->expirationTime = event.expirationTime;
+    }
 };
 
 #endif

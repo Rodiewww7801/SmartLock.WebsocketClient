@@ -26,6 +26,7 @@ void setup()
   lockInstance = new LockInstance();
   lockInstance->currentGPIO = GPIO_NUM_15;
   lockInstance->serverStatusGPIO = GPIO_NUM_2;
+  lockInstance->deviceSerialNumber = deviceSerialNumber;
 
   wifiConnector = new WiFiConnector(wifiSSID, wifiPassword);
   wifiConnector->connect();

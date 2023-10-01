@@ -25,7 +25,6 @@ void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
         // send message to server when Connected
         websocketsClient.sendTXT("Connected");
-        sendDeviceSerialNumberToServer();
         lockInstance->setServerConnectionStatus(this, WStype_CONNECTED);
         break;
     case WStype_TEXT:
@@ -54,7 +53,10 @@ void WebClient::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
 void WebClient::setWebsocketConnection(const char *host, int port, const char *url, const char *rootCACert)
 {
-    this->websocketsClient.beginSslWithCA(host, port, url, rootCACert);
+    std::string serialNumerHeader = "SerialNumber: ";
+    serialNumerHeader.append(lockInstance->deviceSerialNumber);
+    this->websocketsClient.setExtraHeaders(serialNumerHeader.c_str());
+
     std::function<void(WStype_t, uint8_t *, size_t)>
         callbackWrapper;
     callbackWrapper = [this](WStype_t type, uint8_t *payload, size_t length)
@@ -62,18 +64,7 @@ void WebClient::setWebsocketConnection(const char *host, int port, const char *u
         webSocketEvent(type, payload, length);
     };
     this->websocketsClient.onEvent(callbackWrapper);
-}
-
-void WebClient::sendDeviceSerialNumberToServer()
-{
-    if (lockInstance->deviceSerialNumber != NULL && this->ipAddress != NULL)
-    {
-        StaticJsonDocument<1024> doc;
-        doc["serialNumber"] = lockInstance->deviceSerialNumber;
-        doc["ip"] = this->ipAddress;
-        String stringJSON = doc.as<String>();
-        this->websocketsClient.sendTXT(stringJSON);
-    }
+    this->websocketsClient.beginSslWithCA(host, port, url, rootCACert);
 }
 
 void WebClient::parsePayload(uint8_t *payload, WebsocketEvent * returnValue)
@@ -98,7 +89,7 @@ void WebClient::parsePayload(uint8_t *payload, WebsocketEvent * returnValue)
         websocketEvent = openLockEvent;
     }
 
-    returnValue = websocketEvent;
+    memcpy(returnValue, (const WebsocketEvent*)websocketEvent, sizeof(websocketEvent));
 }
 
 void WebClient::handleEvent(WebsocketEvent *event)
@@ -108,7 +99,7 @@ void WebClient::handleEvent(WebsocketEvent *event)
     case WebsocketEvent::OPEN_LOCK:
     {
         Serial.println("[WebClient] handle event type OPEN_LOCK");
-        OpenLockEvent *openLockEvent = static_cast<OpenLockEvent*>(event);
+        OpenLockEvent *openLockEvent = (OpenLockEvent*)event;
         unsigned long currentTime = getCurrentUTC0Time();
         if (currentTime < openLockEvent->expirationTime)
         {
